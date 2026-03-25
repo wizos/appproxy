@@ -18,7 +18,9 @@ import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import cn.ys1231.appproxy.IyueService.IyueVPNService
+import cn.ys1231.appproxy.IyueService.VpnServiceController
 import cn.ys1231.appproxy.data.Utils
+import cn.ys1231.appproxy.mcpserver.MCPServerController
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -36,22 +38,26 @@ class MainActivity : FlutterActivity() {
     private var intentVpnService: Intent? = null
     private var iyueVpnService: IyueVPNService? = null
     private var isBind: Boolean = false
-    private var currentProxy: Map<String, Any>? = null
+    var currentProxy: Map<String, Any>? = null
     private var conn: ServiceConnection? = null
+    private var vpnController: VpnServiceController? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         intentVpnService = Intent(this, IyueVPNService::class.java)
+        vpnController = VpnServiceController(this, iyueVpnService, utils!!)
         conn = object : ServiceConnection {
             override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
                 Log.d(TAG, "onServiceConnected: $name")
 
                 if (service is IyueVPNService.VPNServiceBinder) {
                     iyueVpnService = service.getService()
+                    vpnController?.updateVpnService(iyueVpnService)
+                    MCPServerController.getInstance().setVpnController(vpnController)
+                    Log.d(TAG, "onServiceConnected: ${iyueVpnService.toString()}")
                 } else {
                     Log.d(TAG, "onServiceConnected: ClassCastException")
                 }
-
             }
 
             override fun onServiceDisconnected(name: ComponentName?) {
@@ -126,7 +132,7 @@ class MainActivity : FlutterActivity() {
                 "startVpn" -> {
                     try {
                         currentProxy = call.arguments<Map<String, Any>>()
-                        checkVpnPermissionAndStartVpnService(this)
+                        checkVpnPermissionAndStartVpnService()
                         result.success(iyueVpnService?.isRunning())
                     } catch (e: Exception) {
                         result.error("-1", e.message, null)
@@ -168,11 +174,14 @@ class MainActivity : FlutterActivity() {
                 Log.d(TAG, "configureFlutterEngine: end get app list info")
             }
         }.start()
+        // TODO
+        // flutter 控制 开启关闭服务 修改 密码 port
+        MCPServerController.getInstance().startMcpServer()
     }
 
     private val VPN_REQUEST_CODE = 100
     private val REQUEST_NOTIFICATION_PERMISSION = 1231
-    private fun checkVpnPermissionAndStartVpnService(context: Context) {
+    private fun checkVpnPermissionAndStartVpnService() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(
                     this,
@@ -190,7 +199,7 @@ class MainActivity : FlutterActivity() {
             }
         }
         // 准备建立 VPN 连接 检测用户是否同意
-        var intent = VpnService.prepare(context)
+        val intent = VpnService.prepare(context)
         if (intent != null) {
             this.startActivityForResult(intent, VPN_REQUEST_CODE)
         } else {
@@ -248,6 +257,10 @@ class MainActivity : FlutterActivity() {
             intent.data = Uri.fromParts("package", applicationInfo.packageName, null)
             startActivity(intent)
         }
+    }
+
+    private fun startMCPServer(){
+        
     }
 
     override fun onDestroy() {

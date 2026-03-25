@@ -23,9 +23,10 @@ class _AppSettingsState extends State<AppSettings> {
   var _version = "v0";
   String _arch = "";
   bool _isSwitchZh = true;
+  bool _isEnableDarkMode = false;
+  bool _isMcpServer = false;
   bool _isCheckUpdate = true;
   bool _isCheckWifi = true;
-  bool _isEnableDarkMode = false;
 
   void initDeviceInfo() async {
     DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
@@ -34,9 +35,10 @@ class _AppSettingsState extends State<AppSettings> {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
     // 初始化设置数据
     _isSwitchZh = await AppSetings.getCnOrEn();
+    _isEnableDarkMode = await AppSetings.getEnableDarkMode();
     _isCheckUpdate = await AppSetings.getCheckUpdate();
     _isCheckWifi = await AppSetings.getCheckWifi();
-    _isEnableDarkMode = await AppSetings.getEnableDarkMode();
+    _isMcpServer = await AppSetings.getMcpServer();
     _version = packageInfo.version;
     if (_isCheckUpdate) {
       showUpdateDialog(context, _version, _arch);
@@ -60,225 +62,313 @@ class _AppSettingsState extends State<AppSettings> {
         title: Text(S.current.text_settings),
         backgroundColor: Theme.of(context).primaryColor,
       ),
-      body: Column(
-        children: [
-          Container(
-            alignment: Alignment.centerLeft,
-            padding: const EdgeInsets.only(left: 10.0, top: 10.0),
-            child:
-                Text(S.of(context).LanguageChoice, style: const TextStyle(color: Colors.lightBlue)),
-          ),
-          GestureDetector(
-            child: Card(
-              child: Container(
-                padding: const EdgeInsets.only(left: 10.0),
-                width: MediaQuery.of(context).size.width,
-                height: 50.0,
-                child: Row(
-                  children: [
-                    Align(alignment: Alignment.centerLeft, child: Text(S.of(context).text_cn_en)),
-                    const Spacer(),
-                    Switch(
-                        value: _isSwitchZh,
-                        onChanged: (bool newValue) {
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Container(
+              alignment: Alignment.centerLeft,
+              padding: const EdgeInsets.only(left: 10.0, top: 10.0),
+              child: Text(S.of(context).text_theme,
+                  style: const TextStyle(color: Colors.lightBlue)),
+            ),
+            GestureDetector(
+              child: Card(
+                  child: Container(
+                      padding: const EdgeInsets.only(left: 10.0),
+                      width: MediaQuery.of(context).size.width,
+                      height: 50.0,
+                      child: Row(children: [
+                        Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(S.of(context).text_is_dark_mode)),
+                        const Spacer(),
+                        Switch(
+                            value: _isEnableDarkMode,
+                            onChanged: (bool newValue) {
+                              setState(() {
+                                _isEnableDarkMode = newValue;
+                                debugPrint('isEnableDarkMode:$newValue');
+                                AppSetings.setEnableDarkMode(newValue);
+                                if (_isEnableDarkMode) {
+                                  context
+                                      .read<ThemeBloc>()
+                                      .add(SetThemeEvent(ThemeMode.dark));
+                                } else {
+                                  context
+                                      .read<ThemeBloc>()
+                                      .add(SetThemeEvent(ThemeMode.light));
+                                }
+                              });
+                            })
+                      ]))),
+              onTap: () {
+                // 切换主题
+                setState(() {
+                  _isEnableDarkMode = !_isEnableDarkMode;
+                  debugPrint('isEnableDarkMode:$_isEnableDarkMode');
+                  AppSetings.setEnableDarkMode(_isEnableDarkMode);
+                  if (_isEnableDarkMode) {
+                    context
+                        .read<ThemeBloc>()
+                        .add(SetThemeEvent(ThemeMode.dark));
+                  } else {
+                    context
+                        .read<ThemeBloc>()
+                        .add(SetThemeEvent(ThemeMode.light));
+                  }
+                });
+              },
+            ),
+            Container(
+              alignment: Alignment.centerLeft,
+              padding: const EdgeInsets.only(left: 10.0, top: 10.0),
+              child: Text(S.of(context).LanguageChoice,
+                  style: const TextStyle(color: Colors.lightBlue)),
+            ),
+            GestureDetector(
+              child: Card(
+                child: Container(
+                  padding: const EdgeInsets.only(left: 10.0),
+                  width: MediaQuery.of(context).size.width,
+                  height: 50.0,
+                  child: Row(
+                    children: [
+                      Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(S.of(context).text_cn_en)),
+                      const Spacer(),
+                      Switch(
+                          value: _isSwitchZh,
+                          onChanged: (bool newValue) {
                             _isSwitchZh = newValue;
                             AppSetings.setCnOrEn(newValue);
                             if (newValue) {
-                              context
-                                  .read<LanguageBloc>()
-                                  .add(SetLanguageEvent(const Locale('zh', 'CN')));
+                              context.read<LanguageBloc>().add(
+                                  SetLanguageEvent(const Locale('zh', 'CN')));
                             } else {
-                              context
-                                  .read<LanguageBloc>()
-                                  .add(SetLanguageEvent(const Locale('en', 'US')));
+                              context.read<LanguageBloc>().add(
+                                  SetLanguageEvent(const Locale('en', 'US')));
                             }
-                        })
-                  ],
-                ),
-              ),
-            ),
-            onTap: () {
-              setState(() {
-                _isSwitchZh = !_isSwitchZh;
-                if (_isSwitchZh) {
-                  context
-                      .read<LanguageBloc>()
-                      .add(SetLanguageEvent(const Locale('zh', 'CN')));
-                } else {
-                  context
-                      .read<LanguageBloc>()
-                      .add(SetLanguageEvent(const Locale('en', 'US')));
-                }
-                debugPrint('isSwitchZh:$_isSwitchZh');
-              });
-            },
-          ),
-          Container(
-            alignment: Alignment.centerLeft,
-            padding: const EdgeInsets.only(left: 10.0, top: 10.0),
-            child: Text(S.of(context).text_version_update,
-                style: const TextStyle(color: Colors.lightBlue)),
-          ),
-          GestureDetector(
-            child: Card(
-              child: Container(
-                padding: const EdgeInsets.only(left: 10.0),
-                width: MediaQuery.of(context).size.width,
-                height: 50.0,
-                child: Row(
-                  children: [
-                    Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(S.of(context).text_is_open_check_update)),
-                    const Spacer(),
-                    Switch(
-                        value: _isCheckUpdate,
-                        onChanged: (bool newValue) {
-                          debugPrint('${S.of(context).text_check_update}:$newValue');
-                          setState(() {
-                            _isCheckUpdate = newValue;
-                            AppSetings.setCheckUpdate(newValue);
-                          });
-                        })
-                  ],
-                ),
-              ),
-            ),
-            onTap: () {
-              // const AppUpdate();
-              if (_isCheckUpdate) {
-                // 开启更新检测
-                showUpdateDialog(context, _version, _arch);
-              }
-            },
-          ),
-          Container(
-            alignment: Alignment.centerLeft,
-            padding: const EdgeInsets.only(left: 10.0, top: 10.0),
-            child: Text(S.of(context).text_theme, style: const TextStyle(color: Colors.lightBlue)),
-          ),
-          GestureDetector(
-            child: Card(
-                child: Container(
-                    padding: const EdgeInsets.only(left: 10.0),
-                    width: MediaQuery.of(context).size.width,
-                    height: 50.0,
-                    child: Row(children: [
-                      Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(S.of(context).text_is_dark_mode)),
-                      const Spacer(),
-                      Switch(
-                          value: _isEnableDarkMode,
-                          onChanged: (bool newValue) {
-                            setState(() {
-                              _isEnableDarkMode = newValue;
-                              debugPrint('isEnableDarkMode:$newValue');
-                              AppSetings.setEnableDarkMode(newValue);
-                              if (_isEnableDarkMode) {
-                                context.read<ThemeBloc>().add(SetThemeEvent(ThemeMode.dark));
-                              } else {
-                                context.read<ThemeBloc>().add(SetThemeEvent(ThemeMode.light));
-                              }
-                            });
                           })
-                    ]))),
-            onTap: () {
-              // 切换主题
-              setState(() {
-                _isEnableDarkMode = !_isEnableDarkMode;
-                debugPrint('isEnableDarkMode:$_isEnableDarkMode');
-                AppSetings.setEnableDarkMode(_isEnableDarkMode);
-                if (_isEnableDarkMode) {
-                  context.read<ThemeBloc>().add(SetThemeEvent(ThemeMode.dark));
-                } else {
-                  context.read<ThemeBloc>().add(SetThemeEvent(ThemeMode.light));
-                }
-              });
-            },
-          ),
-          Container(
-            alignment: Alignment.centerLeft,
-            padding: const EdgeInsets.only(left: 10.0, top: 10.0),
-            child: Text(S.of(context).text_wifi_check,
-                style: const TextStyle(color: Colors.lightBlue)),
-          ),
-          GestureDetector(
-            child: Card(
-              child: Container(
-                padding: const EdgeInsets.only(left: 10.0),
-                width: MediaQuery.of(context).size.width,
-                height: 50.0,
-                child: Row(
-                  children: [
-                    Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(S.of(context).text_is_check_wifi)),
-                    const Spacer(),
-                    Switch(
-                        value: _isCheckWifi,
-                        onChanged: (bool newValue) {
-                          debugPrint(S.of(context).text_wifi_check);
-                          setState(() {
-                            _isCheckWifi = newValue;
-                            AppSetings.setCheckWifi(newValue);
-                          });
-                        })
-                  ],
-                ),
-              ),
-            ),
-            onTap: () {
-              // 切换wifi检查
-              setState(() {
-                _isCheckWifi = !_isCheckWifi;
-                debugPrint('isCheckWifi:$_isCheckWifi');
-                AppSetings.setCheckWifi(_isCheckWifi);
-              });
-            },
-          ),
-          Container(
-            alignment: Alignment.centerLeft,
-            padding: const EdgeInsets.only(left: 10.0, top: 10.0),
-            child: Text(S.of(context).text_about, style: const TextStyle(color: Colors.lightBlue)),
-          ),
-          // const SizedBox(height: 10.0),
-          GestureDetector(
-            child: Card(
-                child: Container(
-              padding: const EdgeInsets.only(left: 10.0),
-              width: MediaQuery.of(context).size.width,
-              height: 50.0,
-              child: Center(child: Text('${S.current.text_about} appproxy')),
-            )),
-            onTap: () {
-              const String buildDate = String.fromEnvironment('BUILD_DATE', defaultValue: 'unknown');
-              // 显示当前app的信息
-              showAboutDialog(
-                context: context,
-                applicationName: 'appproxy',
-                applicationVersion: _version,
-                applicationIcon: const Icon(Icons.app_registration),
-                applicationLegalese: 'Copyright © 2024 ...',
-                children: [
-                  Text(S.of(context).text_describe),
-                  Text(S.of(context).text_author),
-                  Text('${S.of(context).text_update_time}：$buildDate'),
-                  Row(
-                    children: [
-                      const Text('github:'),
-                      TextButton(
-                          onPressed: () {
-                            _launchUrl('https://github.com/ys1231/appproxy');
-                          },
-                          child: const Text('appproxy')),
                     ],
                   ),
-                ],
-              );
-            },
-          )
-        ],
+                ),
+              ),
+              onTap: () {
+                setState(() {
+                  _isSwitchZh = !_isSwitchZh;
+                  if (_isSwitchZh) {
+                    context
+                        .read<LanguageBloc>()
+                        .add(SetLanguageEvent(const Locale('zh', 'CN')));
+                  } else {
+                    context
+                        .read<LanguageBloc>()
+                        .add(SetLanguageEvent(const Locale('en', 'US')));
+                  }
+                  debugPrint('isSwitchZh:$_isSwitchZh');
+                });
+              },
+            ),
+            Container(
+              alignment: Alignment.centerLeft,
+              padding: const EdgeInsets.only(left: 10.0, top: 10.0),
+              child: const Text("MCP 服务",
+                  style: TextStyle(color: Colors.lightBlue)),
+            ),
+            GestureDetector(
+              child: Card(
+                  child: Container(
+                padding: const EdgeInsets.only(left: 10.0),
+                width: MediaQuery.of(context).size.width,
+                height: 50.0,
+                child: Row(
+                  children: [
+                    const Expanded(
+                      flex: 1,
+                      child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text("修改默认 MCP 端口 or 密码 | 开启 MCP 服务",
+                              overflow: TextOverflow.ellipsis)),
+                    ),
+                    Switch(
+                        value: _isMcpServer,
+                        onChanged: (bool newValue) {
+                          setState(() {
+                            _isMcpServer = newValue;
+                            AppSetings.setMcpServer(newValue);
+                          });
+                          debugPrint('MCP Server:$newValue');
+                        })
+                  ],
+                ),
+              )),
+              // 支持等待异步弹框
+              onTap: () async {
+                final portController = TextEditingController();
+                final passController = TextEditingController();
+                portController.text = "12345";
+                passController.text = "appproxy";
+                await showDialog(
+                    context: context,
+                    builder: (context) {
+                      bool isObscure = true;
+                      return AlertDialog(
+                        title: const Text('MCP Server'),
+                        content: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          spacing: 8.0,
+                          children: [
+                            TextField(
+                              controller: portController,
+                              decoration: const InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  labelText: 'MCP 端口'),
+                            ),
+                            TextField(
+                                controller: passController,
+                                obscureText: isObscure,
+                                obscuringCharacter: "*",
+                                decoration: const InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  labelText: 'MCP 密码',
+                                )),
+                          ],
+                        ),
+                      );
+                    });
+                debugPrint('---- MCP PORT:${portController.text}');
+                debugPrint('---- MCP PASS:${passController.text}');
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text(
+                        'MCP PORT: ${portController.text} PASS: ${passController.text}'),
+                    backgroundColor: Colors.greenAccent));
+              },
+            ),
+            Container(
+              alignment: Alignment.centerLeft,
+              padding: const EdgeInsets.only(left: 10.0, top: 10.0),
+              child: Text(S.of(context).text_version_update,
+                  style: const TextStyle(color: Colors.lightBlue)),
+            ),
+            GestureDetector(
+              child: Card(
+                child: Container(
+                  padding: const EdgeInsets.only(left: 10.0),
+                  width: MediaQuery.of(context).size.width,
+                  height: 50.0,
+                  child: Row(
+                    children: [
+                      Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(S.of(context).text_is_open_check_update)),
+                      const Spacer(),
+                      Switch(
+                          value: _isCheckUpdate,
+                          onChanged: (bool newValue) {
+                            debugPrint(
+                                '${S.of(context).text_check_update}:$newValue');
+                            setState(() {
+                              _isCheckUpdate = newValue;
+                              AppSetings.setCheckUpdate(newValue);
+                            });
+                          })
+                    ],
+                  ),
+                ),
+              ),
+              onTap: () {
+                // const AppUpdate();
+                if (_isCheckUpdate) {
+                  // 开启更新检测
+                  showUpdateDialog(context, _version, _arch);
+                }
+              },
+            ),
+            Container(
+              alignment: Alignment.centerLeft,
+              padding: const EdgeInsets.only(left: 10.0, top: 10.0),
+              child: Text(S.of(context).text_wifi_check,
+                  style: const TextStyle(color: Colors.lightBlue)),
+            ),
+            GestureDetector(
+              child: Card(
+                child: Container(
+                  padding: const EdgeInsets.only(left: 10.0),
+                  width: MediaQuery.of(context).size.width,
+                  height: 50.0,
+                  child: Row(
+                    children: [
+                      Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(S.of(context).text_is_check_wifi)),
+                      const Spacer(),
+                      Switch(
+                          value: _isCheckWifi,
+                          onChanged: (bool newValue) {
+                            debugPrint(S.of(context).text_wifi_check);
+                            setState(() {
+                              _isCheckWifi = newValue;
+                              AppSetings.setCheckWifi(newValue);
+                            });
+                          })
+                    ],
+                  ),
+                ),
+              ),
+              onTap: () {
+                // 切换wifi检查
+                setState(() {
+                  _isCheckWifi = !_isCheckWifi;
+                  debugPrint('isCheckWifi:$_isCheckWifi');
+                  AppSetings.setCheckWifi(_isCheckWifi);
+                });
+              },
+            ),
+            Container(
+              alignment: Alignment.centerLeft,
+              padding: const EdgeInsets.only(left: 10.0, top: 10.0),
+              child: Text(S.of(context).text_about,
+                  style: const TextStyle(color: Colors.lightBlue)),
+            ),
+            GestureDetector(
+              child: Card(
+                  child: Container(
+                padding: const EdgeInsets.only(left: 10.0),
+                width: MediaQuery.of(context).size.width,
+                height: 50.0,
+                child: Center(child: Text('${S.current.text_about} appproxy')),
+              )),
+              onTap: () {
+                const String buildDate = String.fromEnvironment('BUILD_DATE',
+                    defaultValue: 'unknown');
+                // 显示当前app的信息
+                showAboutDialog(
+                  context: context,
+                  applicationName: 'appproxy',
+                  applicationVersion: _version,
+                  applicationIcon: const Icon(Icons.app_registration),
+                  applicationLegalese: 'Copyright © 2024 ...',
+                  children: [
+                    Text(S.of(context).text_describe),
+                    Text(S.of(context).text_author),
+                    Text('${S.of(context).text_update_time}：$buildDate'),
+                    Row(
+                      children: [
+                        const Text('github:'),
+                        TextButton(
+                            onPressed: () {
+                              _launchUrl('https://github.com/ys1231/appproxy');
+                            },
+                            child: const Text('appproxy')),
+                      ],
+                    ),
+                  ],
+                );
+              },
+            )
+          ],
+        ),
       ),
     );
   }
@@ -297,8 +387,9 @@ void showUpdateDialog(BuildContext context, String version, String arch,
     {url = '', retryCount = 0}) async {
   int maxRetry = 2; // 最大重试次数
   // 获取版本信息
-  String appproxyUpdateUrl =
-      url != "" ? url : "https://pfile.ys1231.cn/modules/appproxy/appproxy.json";
+  String appproxyUpdateUrl = url != ""
+      ? url
+      : "https://pfile.ys1231.cn/modules/appproxy/appproxy.json";
   // 使用dio获取版本信息
   String versionName = "0";
   String modifyContent = "";
@@ -327,13 +418,15 @@ void showUpdateDialog(BuildContext context, String version, String arch,
   } catch (e) {
     if (retryCount < maxRetry) {
       retryCount++;
-      appproxyUpdateUrl = "https://api.github.com/repos/ys1231/appproxy/releases/latest";
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(S.of(context).text_get_version_info_fail)));
-      showUpdateDialog(context, version, arch, url: appproxyUpdateUrl, retryCount: retryCount);
+      appproxyUpdateUrl =
+          "https://api.github.com/repos/ys1231/appproxy/releases/latest";
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(S.of(context).text_get_version_info_fail)));
+      showUpdateDialog(context, version, arch,
+          url: appproxyUpdateUrl, retryCount: retryCount);
     } else {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(S.of(context).text_get_version_info_check_networ)));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(S.of(context).text_get_version_info_check_networ)));
       return;
     }
   }
@@ -344,9 +437,10 @@ void showUpdateDialog(BuildContext context, String version, String arch,
     if (versionName == "0") {
       return;
     }
-    debugPrint('${S.of(context).text_current_latest},current:$version,new:$versionName');
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(S.of(context).text_current_latest)));
+    debugPrint(
+        '${S.of(context).text_current_latest},current:$version,new:$versionName');
+    ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(S.of(context).text_current_latest)));
     return;
   }
   // 显示更新对话框

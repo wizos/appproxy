@@ -78,6 +78,16 @@ android {
         jniLibs {
             useLegacyPackaging = true
         }
+        resources {
+            // 排除导致冲突的 META-INF 文件
+            excludes += "META-INF/INDEX.LIST"
+            excludes += "META-INF/io.netty.versions.properties"
+            excludes += "META-INF/DEPENDENCIES"
+            excludes += "META-INF/LICENSE"
+            excludes += "META-INF/LICENSE.txt"
+            excludes += "META-INF/NOTICE"
+            excludes += "META-INF/NOTICE.txt"
+        }
     }
 }
 
@@ -88,4 +98,11 @@ flutter {
 dependencies {
     implementation(files("libs/tun2socks.aar"))
     implementation("com.google.code.gson:gson:2.13.2")
+    implementation("io.ktor:ktor-server-cors:3.4.1")
+    implementation("io.ktor:ktor-server-netty:3.4.1")
+    implementation("io.ktor:ktor-server-auth:3.4.1")
+    implementation("io.ktor:ktor-server-sse:3.4.1")
+    implementation("io.modelcontextprotocol:kotlin-sdk-server:0.9.0")
+    implementation("io.ktor:ktor-server-content-negotiation:3.4.1")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:3.4.1")
 }
