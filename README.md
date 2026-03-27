@@ -13,16 +13,26 @@
 4. 出于学习熟悉flutter的目的去做的,分享给大家,顺便帮我测试一下.
 5. 加上[MoveCertificate](https://github.com/ys1231/MoveCertificate) 上下游都有了哈哈.
 6. 支持 `Android 9` 及以上版本， 低于 `android 9` 推荐使用 `postern`
+7. 支持 `MCP` 远程调用, ip 地址为手机 ip， 默认端口为 `12345`, 默认`auth`为 `appproxy`
+```json
+{
+  "mcpServers": {
+    "appproxy-mcp": {
+      "type": "streamable-http",
+      "url": "http://192.168.0.10:12345/mcp",
+      "headers": {
+        "Authorization": "Bearer appproxy"
+      }
+    }
+  }
+}
+```
 
 ## 重要的事情说三遍
 
 - **双击修改配置**
 - **双击修改配置**
 - **双击修改配置**
-
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=ys1231/appproxy&type=Date)](https://star-history.com/#ys1231/appproxy&Date)
 
 ## 附上截图
 
@@ -35,6 +45,11 @@
 ![Screenshot_20240604-205148](./assets/Screenshot_20240604-205148.png)
 
 ![Screenshot_20240604-205158](./assets/Screenshot_20240604-205158.png)
+
+![screenshot-20260327-205536](./assets/screenshot-20260327-205536.png)
+
+![screenshot-20260327-205655](./assets/screenshot-20260327-205655.png)
+
 ![img.png](assets/img.png)
 
 # 依赖项目
@@ -92,6 +107,10 @@ shorebird release -p android --artifact apk
 # 打补丁
 shorebird patch --platforms=android
 ```
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=ys1231/appproxy&type=Date)](https://star-history.com/#ys1231/appproxy&Date)
 
 # 免责声明
 - 本程序仅用于学习交流, 请勿用于非法用途.

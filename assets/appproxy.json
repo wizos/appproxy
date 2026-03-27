@@ -1,5 +1,5 @@
 {
-  "VersionName": "v0.2.4",
-  "ModifyContent": "\r\n- build(tun2socks): #42 调整编译脚本和Android配置以兼容API 28\n- 新增btun2socks.sh脚本替代之前的build.sh, 并修正目录切换问题\n- gomobile绑定命令中androidapi版本由30降至28以兼容Android 9\n- 修改android/app/build.gradle.kts中minSdkVersion为28, 跟随tun2socks.aar支持要求\n- 更新android/settings.gradle.kts中com.android.application插件版本至9.1.0\n- 在Utils.kt中根据不同Android版本使用WEBP或PNG格式压缩图标数据\n- 在.gitignore中添加arms_cache目录忽略规则",
+  "VersionName": "v0.2.5",
+  "ModifyContent": "\r\n- 新增 MCP 服务支持远程调用\n```shell\n{\n  \"mcpServers\": {\n    \"appproxy-mcp\": {\n      \"type\": \"streamable-http\",\n      \"url\": \"http://192.168.0.10:12345/mcp\",\n      \"headers\": {\n        \"Authorization\": \"Bearer appproxy\"\n      }\n    }\n  }\n}\n- **必须先授权VPN启动权限**```",
   "DownloadUrl": "https://pfile.ys1231.cn/modules/appproxy/"
 }
