@@ -38,7 +38,7 @@ class VpnServiceController(
 
     fun startVpn(config: Map<String, Any>): String {
         return try {
-            // {proxyPort=8080, proxyPass=, proxyName=vpn, proxyType=http, proxyUser=, appProxyPackageList=["mx.com.bancoazteca.bazdigitalmovil"], proxyHost=192.168.0.11}
+            // {proxyPort=8080, proxyPass=, proxyName=vpn, proxyType=http, proxyUser=, appProxyPackageList=["com.bssss"], proxyHost=192.168.0.11}
             vpnService?.startVpnService(config)
             "VPN started successfully"
         } catch (e: Exception) {

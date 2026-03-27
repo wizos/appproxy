@@ -24,7 +24,8 @@
 
     <application
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/vpn_round"
+        android:roundIcon="@mipmap/vpn_round"
         android:label="appproxy">
         <service
             android:name=".IyueService.IyueVPNService"

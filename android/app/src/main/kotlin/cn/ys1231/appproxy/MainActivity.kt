@@ -292,10 +292,6 @@ class MainActivity : FlutterActivity() {
         }
     }
 
-    private fun startMCPServer(){
-        
-    }
-
     override fun onDestroy() {
         super.onDestroy()
         if (isBind) {
