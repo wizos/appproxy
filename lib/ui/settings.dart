@@ -201,7 +201,6 @@ class _AppSettingsState extends State<AppSettings> {
                       flex: 1,
                       child: Align(
                           alignment: Alignment.centerLeft,
-                          // TODO 多语支持 mcp 测试
                           child: Text(S.of(context).mcp_switch_text,
                               overflow: TextOverflow.ellipsis)),
                     ),
