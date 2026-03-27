@@ -18,16 +18,22 @@ class VpnServiceController(
         Log.d(TAG, "VPN service updated: $newVpnService")
     }
 
-//    fun isServiceAvailable(): Boolean {
-//        return true
-//    }
-
-    fun configChange(config: Map<String, Any>) {
+    fun setVpnConfig(config: Map<String, Any>): Boolean {
+        var isChange = false
         for (key in config.keys) {
             if (fields.contains(key)) {
                 currentProxy!![key] = config[key]!!
+                isChange = true
             }
         }
+        return isChange
+    }
+
+    fun getVpvConfig(): Map<String, Any>? {
+        return currentProxy
+    }
+    fun getPackageList(): List<String> {
+        return utils.getPackageList()
     }
 
     fun startVpn(config: Map<String, Any>): String {
@@ -48,12 +54,11 @@ class VpnServiceController(
             }
         } catch (e: Exception) {
             "Error to stop VPN: ${e.message}"
-
         }
     }
 
-    fun getVpnStatus(): String {
-        return "VPN state:${vpnService?.isRunning()}"
+    fun getVpnStatus(): Boolean? {
+        return vpnService?.isRunning()
     }
 
 }

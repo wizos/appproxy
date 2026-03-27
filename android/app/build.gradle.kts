@@ -65,6 +65,14 @@ android {
     buildTypes {
         release {
             signingConfig = signingConfigs.getByName("release")
+            // 启用代码压缩和混淆
+            isMinifyEnabled = true
+            isShrinkResources = true
+            // 添加 ProGuard 规则文件
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
         debug {
             signingConfig = signingConfigs.getByName("debug")

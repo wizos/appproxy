@@ -20,7 +20,7 @@ import androidx.core.content.ContextCompat
 import cn.ys1231.appproxy.IyueService.IyueVPNService
 import cn.ys1231.appproxy.IyueService.VpnServiceController
 import cn.ys1231.appproxy.data.Utils
-import cn.ys1231.appproxy.mcpserver.MCPServerController
+import cn.ys1231.appproxy.mcpserver.MCPServer
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -31,9 +31,10 @@ class MainActivity : FlutterActivity() {
     private val CHANNEL = "cn.ys1231/appproxy"
     private val CHANNEL_VPN = "cn.ys1231/appproxy/vpn"
     private val CHANNEL_APP_UPDATE = "cn.ys1231/appproxy/appupdate"
+    private val CHANNEL_MCP_SERVER = "cn.ys1231/appproxy/mcpserver"
     private var FLUTTER_VPN_CHANNEL: MethodChannel? = null
     private var FLUTTER_CHANNEL: MethodChannel? = null
-
+    private var FLUTTER_MCP_SERVER: MethodChannel? = null
     private var utils: Utils? = null
     private var intentVpnService: Intent? = null
     private var iyueVpnService: IyueVPNService? = null
@@ -53,7 +54,7 @@ class MainActivity : FlutterActivity() {
                 if (service is IyueVPNService.VPNServiceBinder) {
                     iyueVpnService = service.getService()
                     vpnController?.updateVpnService(iyueVpnService)
-                    MCPServerController.getInstance().setVpnController(vpnController)
+                    MCPServer.getInstance(context).setVpnController(vpnController)
                     Log.d(TAG, "onServiceConnected: ${iyueVpnService.toString()}")
                 } else {
                     Log.d(TAG, "onServiceConnected: ClassCastException")
@@ -123,11 +124,10 @@ class MainActivity : FlutterActivity() {
             }
         }
 
-        FLUTTER_VPN_CHANNEL = MethodChannel(
+        MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
             CHANNEL_VPN
-        )
-        FLUTTER_VPN_CHANNEL!!.setMethodCallHandler { call, result ->
+        ).setMethodCallHandler { call, result ->
             when (call.method) {
                 "startVpn" -> {
                     try {
@@ -138,7 +138,6 @@ class MainActivity : FlutterActivity() {
                         result.error("-1", e.message, null)
                     }
                 }
-
                 "stopVpn" -> {
                     try {
                         stopVpnService()
@@ -163,6 +162,42 @@ class MainActivity : FlutterActivity() {
                 }
             }
         }
+        MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            CHANNEL_MCP_SERVER
+        ).setMethodCallHandler { call, result ->
+            when (call.method) {
+                "startMcpServer" -> {
+                    try {
+                        MCPServer.getInstance(this).startMcpServer()
+                        result.success(true)
+                    } catch (e: Exception) {
+                        result.error("-1", e.message, null)
+                    }
+                }
+                "stopMcpServer" -> {
+                    try {
+                        MCPServer.getInstance(this).stopMcpServer()
+                        result.success(true)
+                    } catch (e: Exception) {
+                        result.error("-1", e.message, null)
+                    }
+                }
+                "updateMcpServerConfig" -> {
+                    try {
+                        val arguments = call.arguments as List<*>
+                        val port: Int = arguments[0] as Int
+                        val auth: String = arguments[1] as String
+                        MCPServer.getInstance(this).updateMcpPort(port)
+                        MCPServer.getInstance(this).updateMcpAuth(auth)
+                        result.success(true)
+                    } catch (e: Exception) {
+                        result.error("-1", e.message, null)
+                    }
+                }
+            }
+        }
+
 
         // 遍历所有 app 通知刷新
         Thread {
@@ -174,9 +209,6 @@ class MainActivity : FlutterActivity() {
                 Log.d(TAG, "configureFlutterEngine: end get app list info")
             }
         }.start()
-        // TODO
-        // flutter 控制 开启关闭服务 修改 密码 port
-        MCPServerController.getInstance().startMcpServer()
     }
 
     private val VPN_REQUEST_CODE = 100

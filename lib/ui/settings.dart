@@ -4,11 +4,11 @@ import 'package:appproxy/ui/app_update.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:version/version.dart';
-
 import '../events/language_bloc.dart';
 import '../generated/l10n.dart';
 
@@ -20,6 +20,7 @@ class AppSettings extends StatefulWidget {
 }
 
 class _AppSettingsState extends State<AppSettings> {
+  static const platform = MethodChannel('cn.ys1231/appproxy/mcpserver');
   var _version = "v0";
   String _arch = "";
   bool _isSwitchZh = true;
@@ -27,6 +28,11 @@ class _AppSettingsState extends State<AppSettings> {
   bool _isMcpServer = false;
   bool _isCheckUpdate = true;
   bool _isCheckWifi = true;
+  final portController = TextEditingController();
+  final passController = TextEditingController();
+  var mcpPort = 0;
+  var authToken = "";
+  late var sMsg;
 
   void initDeviceInfo() async {
     DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
@@ -39,6 +45,12 @@ class _AppSettingsState extends State<AppSettings> {
     _isCheckUpdate = await AppSetings.getCheckUpdate();
     _isCheckWifi = await AppSetings.getCheckWifi();
     _isMcpServer = await AppSetings.getMcpServer();
+    mcpPort = await AppSetings.getMcpPort();
+    authToken = await AppSetings.getAuthToken();
+    platform.invokeMethod('updateMcpServerConfig', [mcpPort, authToken]);
+    if (_isMcpServer) {
+      platform.invokeMethod('startMcpServer');
+    }
     _version = packageInfo.version;
     if (_isCheckUpdate) {
       showUpdateDialog(context, _version, _arch);
@@ -57,6 +69,7 @@ class _AppSettingsState extends State<AppSettings> {
     if (_isEnableDarkMode) {
       context.read<ThemeBloc>().add(SetThemeEvent(ThemeMode.dark));
     }
+    sMsg = ScaffoldMessenger.of(context);
     return Scaffold(
       appBar: AppBar(
         title: Text(S.current.text_settings),
@@ -184,11 +197,12 @@ class _AppSettingsState extends State<AppSettings> {
                 height: 50.0,
                 child: Row(
                   children: [
-                    const Expanded(
+                    Expanded(
                       flex: 1,
                       child: Align(
                           alignment: Alignment.centerLeft,
-                          child: Text("修改默认 MCP 端口 or 密码 | 开启 MCP 服务",
+                          // TODO 多语支持 mcp 测试
+                          child: Text(S.of(context).mcp_switch_text,
                               overflow: TextOverflow.ellipsis)),
                     ),
                     Switch(
@@ -197,18 +211,22 @@ class _AppSettingsState extends State<AppSettings> {
                           setState(() {
                             _isMcpServer = newValue;
                             AppSetings.setMcpServer(newValue);
+                            if (newValue) {
+                              platform.invokeMethod('startMcpServer');
+                            } else {
+                              platform.invokeMethod('stopMcpServer');
+                            }
                           });
-                          debugPrint('MCP Server:$newValue');
+                          debugPrint(S.of(context).mcp_server);
                         })
                   ],
                 ),
               )),
               // 支持等待异步弹框
               onTap: () async {
-                final portController = TextEditingController();
-                final passController = TextEditingController();
-                portController.text = "12345";
-                passController.text = "appproxy";
+                if (!_isMcpServer) return;
+                portController.text = mcpPort.toString();
+                passController.text = authToken;
                 await showDialog(
                     context: context,
                     builder: (context) {
@@ -221,28 +239,51 @@ class _AppSettingsState extends State<AppSettings> {
                           children: [
                             TextField(
                               controller: portController,
-                              decoration: const InputDecoration(
-                                  border: OutlineInputBorder(),
-                                  labelText: 'MCP 端口'),
+                              decoration: InputDecoration(
+                                  border: const OutlineInputBorder(),
+                                  labelText: S.of(context).mcp_port),
                             ),
                             TextField(
                                 controller: passController,
                                 obscureText: isObscure,
                                 obscuringCharacter: "*",
-                                decoration: const InputDecoration(
-                                  border: OutlineInputBorder(),
-                                  labelText: 'MCP 密码',
+                                decoration: InputDecoration(
+                                  border: const OutlineInputBorder(),
+                                  labelText: S.of(context).mcp_auth,
                                 )),
                           ],
                         ),
+                        actions: [
+                          Center(
+                            child: TextButton(
+                                onPressed: () {
+                                  var port = int.parse(portController.text);
+                                  var auth = passController.text;
+                                  debugPrint(
+                                      'update MCP PORT:${portController.text} AUTH:${passController.text}');
+                                  if (mcpPort != port || authToken != auth) {
+                                    setState(() {
+                                      mcpPort = port;
+                                      authToken = auth;
+                                      AppSetings.setMcpPort(port);
+                                      AppSetings.setAuthToken(auth);
+                                      platform.invokeMethod(
+                                          'updateMcpServerConfig',
+                                          [port, auth]);
+                                      sMsg.showSnackBar(SnackBar(
+                                          content: Text(
+                                              'MCP PORT: $mcpPort AUTH: $authToken'),
+                                          backgroundColor: Colors.greenAccent));
+                                    });
+                                  }
+                                  Navigator.of(context).pop();
+                                },
+                                child: Text(S.of(context).ok,
+                                    style: const TextStyle(fontSize: 16.0))),
+                          )
+                        ],
                       );
                     });
-                debugPrint('---- MCP PORT:${portController.text}');
-                debugPrint('---- MCP PASS:${passController.text}');
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text(
-                        'MCP PORT: ${portController.text} PASS: ${passController.text}'),
-                    backgroundColor: Colors.greenAccent));
               },
             ),
             Container(

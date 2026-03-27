@@ -30,7 +30,7 @@
   "text_is_open_check_update": "是否开启更新检测",
   "text_check_update": "更新检测",
   "text_about": "关于",
-  "text_describe": "appproxy 是一个轻量级的VPN代理工具，支持HTTP, SOCKS5协议",
+  "text_describe": "appproxy 是一个轻量级的VPN代理工具, 支持HTTP, SOCKS5协议",
   "text_author": "作者：@iyue",
   "text_update_time": "更新时间",
   "text_get_version_info_fail": "获取版本信息失败,使用国内更新渠道!",
@@ -44,5 +44,10 @@
   "text_is_dark_mode": "开启深色模式",
   "text_default_follow_the_system": "默认跟随系统",
   "LanguageChoice": "语言修改",
-  "text_cn_en": "中/英文切换"
+  "text_cn_en": "中/英文切换",
+  "mcp_switch_text": "修改默认 MCP 端口 or 密码 | 开启 MCP 服务",
+  "mcp_server": "MCP 服务",
+  "mcp_port": "MCP 端口",
+  "mcp_auth": "MCP 密码",
+  "ok": "确认"
 }

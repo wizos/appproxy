@@ -44,5 +44,10 @@
   "text_is_dark_mode": "Turn on the dark mode",
   "text_default_follow_the_system": "Default follow the system",
   "LanguageChoice": "Language choice",
-  "text_cn_en": "Chinese/English Switch"
+  "text_cn_en": "Chinese/English Switch",
+  "mcp_switch_text": "Modify default MCP port or password | Enable MCP service",
+  "mcp_server": "MCP Server",
+  "mcp_port": "MCP Port",
+  "mcp_auth": "MCP Password",
+  "ok": "OK"
 }

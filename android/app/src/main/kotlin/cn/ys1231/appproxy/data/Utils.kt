@@ -110,6 +110,31 @@ class Utils(private val context: Context) {
         }
     }
 
+    fun getPackageList(): List<String> {
+        val pm = context.packageManager
+
+        // 获取已安装应用的PackageInfo列表，包括应用的权限信息
+        val resolveInfos: List<PackageInfo> =
+            pm.getInstalledPackages(PackageManager.GET_PERMISSIONS)
+
+        // 创建一个列表，用于存储应用信息的Map对象
+        val packageList = mutableListOf<String>()
+
+        // 遍历已安装的应用列表
+        for (info in resolveInfos) {
+            // 排除当前应用或未请求INTERNET权限的应用
+            if (info.packageName == context.applicationInfo.packageName ||
+                info.requestedPermissions == null ||
+                !(info.requestedPermissions as Array<out Any?>).contains(INTERNET)
+            ) {
+                continue
+            }
+            // 获取并添加应用的包名
+            packageList.add(info.packageName)
+        }
+        return packageList.toList()
+    }
+
     private val PackageInfo.isSystemApp: Boolean
         get() = applicationInfo!!.flags and FLAG_SYSTEM != 0
 
