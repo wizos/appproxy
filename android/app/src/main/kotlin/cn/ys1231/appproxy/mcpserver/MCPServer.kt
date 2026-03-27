@@ -40,6 +40,10 @@ import io.modelcontextprotocol.kotlin.sdk.types.ServerCapabilities
 import io.ktor.util.collections.ConcurrentMap
 import io.modelcontextprotocol.kotlin.sdk.server.StreamableHttpServerTransport
 import io.modelcontextprotocol.kotlin.sdk.types.CallToolResult
+import io.modelcontextprotocol.kotlin.sdk.types.GetPromptResult
+import io.modelcontextprotocol.kotlin.sdk.types.PromptArgument
+import io.modelcontextprotocol.kotlin.sdk.types.PromptMessage
+import io.modelcontextprotocol.kotlin.sdk.types.Role
 import io.modelcontextprotocol.kotlin.sdk.types.TextContent
 import io.modelcontextprotocol.kotlin.sdk.types.ToolSchema
 import kotlinx.serialization.json.add
@@ -466,7 +470,7 @@ class MCPServer private constructor(
                 // 记录日志
                 Log.i(TAG, "Proxy start result: $result")
 
-                CallToolResult(
+                return@addTool CallToolResult(
                     content = listOf(
                         TextContent(result)
                     ),
@@ -474,7 +478,7 @@ class MCPServer private constructor(
                 )
             } catch (e: Exception) {
                 Log.e(TAG, "Error starting proxy: ${e.message}", e)
-                CallToolResult(
+                return@addTool CallToolResult(
                     content = listOf(
                         TextContent("Error starting proxy: ${e.message}")
                     ),
@@ -493,7 +497,7 @@ class MCPServer private constructor(
                     Log.d(TAG, "stop_proxy called")
                     val result: String = vpnController!!.stopVpn()
                     Log.d(TAG, "Proxy stop result: $result")
-                    CallToolResult(
+                    return@addTool CallToolResult(
                         content = listOf(
                             TextContent(result)
                         ),
@@ -501,7 +505,7 @@ class MCPServer private constructor(
                     )
                 }catch (e: Exception){
                     Log.e(TAG, "Error stopping proxy: ${e.message}", e)
-                    CallToolResult(
+                    return@addTool CallToolResult(
                         content = listOf(
                             TextContent("Error stopping proxy: ${e.message}")
                         ),
@@ -519,14 +523,14 @@ class MCPServer private constructor(
                 Log.d(TAG, "get_proxy_status called")
                 val result: Boolean = vpnController!!.getVpnStatus() == true
                 Log.d(TAG, "Proxy status: $result")
-                CallToolResult(
+            return@addTool CallToolResult(
                     content = listOf(
                         TextContent(if (result) "Proxy is running" else "Proxy is not running")
                     ),
                     isError = !result
                 )
             } catch (e: Exception) {
-                CallToolResult(
+                return@addTool CallToolResult(
                     content = listOf(
                         TextContent("Error getting Proxy status: ${e.message}")
                     ),
@@ -542,14 +546,14 @@ class MCPServer private constructor(
         ){
             _ -> try {
             val result: Boolean = vpnController!!.getVpnStatus() == true
-                CallToolResult(
+                return@addTool CallToolResult(
                     content = listOf(
                         TextContent(
                             "${if (result) "Proxy is running" else "Proxy is not running"}, Current proxy configuration:"+ vpnController!!.getVpvConfig().toString() )
                     )
                 )
             }catch (e: Exception){
-                CallToolResult(
+                return@addTool CallToolResult(
                     content = listOf(
                         TextContent("Error getting proxy configuration: ${e.message}")
                     ),
@@ -561,13 +565,13 @@ class MCPServer private constructor(
         // 修改代理参数 可选 其一 可多选 {proxyHost: '192.168.0.2', proxyPort: '8080', proxyType: 'http', proxyUser: '', proxyPass: '', appProxyPackageList: '["com.qihoo.contents", "com.whatsapp"]'}
         server.addTool(
             "update_proxy_config",
-            description = "Update the proxy configuration",
+            description = "Update the proxy configuration, proxyHost, proxyPort, proxyType cannot be empty, Tip: Ask user for required fields if not provided",
             inputSchema = ToolSchema(
                 properties = buildJsonObject{
                     putJsonObject("proxyHost") {
                         put("type", "string")
-                        put("description", "Proxy host address")
-                        put("default", "192.168.0.2")
+                        put("description", "Proxy host address, default: device LAN IP")
+                        put("default", "192.168.0.10")
                         put("examples", buildJsonArray {
                             add("192.168.0.2")
                             add("10.0.0.1")
@@ -635,7 +639,7 @@ class MCPServer private constructor(
                 val appList: List<String> = Gson().fromJson(appListJson, type)
                 val packageList = vpnController!!.getPackageList()
 
-                if (!packageList.containsAll(appList)){
+                if (appList.isNotEmpty() && !packageList.containsAll(appList)){
                     val missingPackages = appList.filter { it !in packageList }
                     Log.e(TAG, "Error: $missingPackages is not valid")
                     return@addTool CallToolResult(
@@ -645,11 +649,11 @@ class MCPServer private constructor(
                         isError = true
                     )
                 }
-                if (proxyHost.isEmpty() || proxyPort.isEmpty() || proxyType.isEmpty() || proxyUser.isEmpty() || proxyPass.isEmpty()){
-                    Log.e(TAG, "Error: proxyHost, proxyPort, proxyType, proxyUser, proxyPass cannot be empty")
+                if (proxyHost.isEmpty() || proxyPort.isEmpty() || proxyType.isEmpty()){
+                    Log.e(TAG, "Error: proxyHost, proxyPort, proxyType cannot be empty")
                     return@addTool CallToolResult(
                         content = listOf(
-                            TextContent("Error: proxyHost, proxyPort, proxyType, proxyUser, proxyPass cannot be empty")
+                            TextContent("Error: proxyHost, proxyPort, proxyType cannot be empty")
                         ),
                         isError = true
                     )
@@ -663,23 +667,22 @@ class MCPServer private constructor(
                     "proxyPass" to proxyPass,
                     "appProxyPackageList" to appList,
                 )
-                var isRestartMcpServer = vpnController!!.setVpnConfig(config)
+                val isRestartMcpServer = vpnController!!.setVpnConfig(config)
                 if (isRestartMcpServer){
                     vpnController!!.stopVpn()
                     config = vpnController!!.getVpvConfig()!!
                     val result: String = vpnController!!.startVpn(config)
-                    vpnController!!.setVpnConfig(config)
                     // 记录日志
                     Log.i(TAG, "Proxy start result: $result")
 
-                    CallToolResult(
+                    return@addTool CallToolResult(
                         content = listOf(
                             TextContent(result)
                         ),
                         isError = result.startsWith("Error") || result.contains("not granted")
                     )
                 }
-                CallToolResult(
+                return@addTool CallToolResult(
                     content = listOf(
                         TextContent("Proxy no need update")
                     ),
@@ -695,7 +698,26 @@ class MCPServer private constructor(
                 )
             }
         }
-
+        server.addPrompt(
+            "how_to_use_appproxy-mcp",
+            description = "Guide for using appproxy-mcp",
+        ){ _ ->
+            GetPromptResult(
+                description = "appproxy-mcp usage guide",
+                messages = listOf(
+                    PromptMessage(
+                        role = Role.User,
+                        content = TextContent("""
+                            |## appproxy-mcp Guide
+                            |Tools: start_proxy, stop_proxy, get_proxy_status, get_proxy_config, update_proxy_config
+                            |start_proxy: proxyHost(default: device LAN IP), proxyPort, proxyType(http/socks5), proxyName, [proxyUser, proxyPass, appProxyPackageList]
+                            |appProxyPackageList: JSON array e.g. ["com.whatsapp"], [] = all apps
+                            |Note: VPN permission required first use; packages must be installed apps
+                        """.trimMargin()),
+                    ),
+                ),
+            )
+        }
         return server
     }
 

@@ -73,6 +73,7 @@ class MainActivity : FlutterActivity() {
     private fun startVpnService() {
         Log.d(TAG, "startVpnService: ${currentProxy.toString()}")
         iyueVpnService?.startVpnService(currentProxy!!)
+        vpnController?.setVpnConfig(currentProxy!!)
 
         // 检测VPN服务是否停止 通知 Flutter 更新 ui
         Thread {

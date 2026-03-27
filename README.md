@@ -54,7 +54,7 @@
 
 # 依赖项目
 - [tun2socks](https://github.com/xjasonlyu/tun2socks)
-
+- [MCP](https://github.com/modelcontextprotocol/kotlin-sdk/tree/main/samples/simple-streamable-server) 参考项目
 # 开发
 
 ## build tun2socks
