@@ -124,10 +124,11 @@ class MainActivity : FlutterActivity() {
             }
         }
 
-        MethodChannel(
+        FLUTTER_VPN_CHANNEL = MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
             CHANNEL_VPN
-        ).setMethodCallHandler { call, result ->
+        )
+        FLUTTER_VPN_CHANNEL!!.setMethodCallHandler { call, result ->
             when (call.method) {
                 "startVpn" -> {
                     try {
