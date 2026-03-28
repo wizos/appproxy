@@ -1,5 +1,5 @@
 {
   "VersionName": "v0.2.5",
-  "ModifyContent": "\r\n- feat(appproxy): #43 支持 MCP 服务远程调用\n- 在配置文件中新增 MCP 服务支持远程调用\n- 增加 mcpServers 配置示例，支持 HTTP 流式访问并带有授权头\n- 更新 pubspec.yaml 描述，注明支持 MCP 调用\n- README 增加 MCP 远程调用使用说明和示例配置\n- 补充相关截图，展示 MCP 功能界面\n- **必须先授权VPN启动权限**\n```shell\n{\n  \"mcpServers\": {\n    \"appproxy-mcp\": {\n      \"type\": \"streamable-http\",\n      \"url\": \"http://192.168.0.10:12345/mcp\",\n      \"headers\": {\n        \"Authorization\": \"Bearer appproxy\"\n      }\n    }\n  }\n}\n```\n- 修复更新代理配置校验错误",
+  "ModifyContent": "\r\n- feat(appproxy): #43 支持 MCP 服务远程调用\n- 在配置文件中新增 MCP 服务支持远程调用\n- 增加 mcpServers 配置示例，支持 HTTP 流式访问并带有授权头\n- 更新 pubspec.yaml 描述，注明支持 MCP 调用\n- README 增加 MCP 远程调用使用说明和示例配置\n- 补充相关截图，展示 MCP 功能界面\n- **必须先授权VPN启动权限**\n- 修复更新代理配置校验错误\n```shell\n{\n  \"mcpServers\": {\n    \"appproxy-mcp\": {\n      \"type\": \"streamable-http\",\n      \"url\": \"http://192.168.0.10:12345/mcp\",\n      \"headers\": {\n        \"Authorization\": \"Bearer appproxy\"\n      }\n    }\n  }\n}\n```",
   "DownloadUrl": "https://pfile.ys1231.cn/modules/appproxy/"
 }
