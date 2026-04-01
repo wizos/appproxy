@@ -421,8 +421,8 @@ class MCPServer private constructor(
                         isError = true
                     )
                 }
-                // 校验 用户名 密码 长度大于10 报错
-                if (proxyUser.length > 10 || proxyPass.length > 10) {
+                // 校验 用户名 密码 长度大于30 报错
+                if (proxyUser.length > 30 || proxyPass.length > 30) {
                     Log.e(TAG, "Error: proxyUser or proxyPass is too long")
                     return@addTool CallToolResult(
                         content = listOf(
