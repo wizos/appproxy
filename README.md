@@ -13,7 +13,7 @@
 4. 出于学习熟悉flutter的目的去做的,分享给大家,顺便帮我测试一下.
 5. 加上[MoveCertificate](https://github.com/ys1231/MoveCertificate) 上下游都有了哈哈.
 6. 支持 `Android 9` 及以上版本， 低于 `android 9` 推荐使用 `postern`
-7. 支持 `MCP` 远程调用, ip 地址为手机 ip， 默认端口为 `12345`, 默认`auth`为 `appproxy`
+7. 支持 `MCP` 远程调用, ip 地址为手机 ip， 默认端口为 `12345`, 默认`auth`为 `appproxy` `claude type use "http"`
 ```json
 {
   "mcpServers": {
