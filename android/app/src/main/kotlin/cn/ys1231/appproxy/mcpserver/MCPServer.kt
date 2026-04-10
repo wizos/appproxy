@@ -109,7 +109,9 @@ class MCPServer private constructor(
     }
 
     fun stopMcpServer() {
-        nettyServer?.stop()
+        if (nettyServer != null){
+            nettyServer?.stop()
+        }
         Log.d(TAG, "MCP server stopped")
         nettyServer = null
     }

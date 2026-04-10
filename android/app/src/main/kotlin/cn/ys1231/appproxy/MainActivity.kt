@@ -20,6 +20,7 @@ import androidx.core.content.ContextCompat
 import cn.ys1231.appproxy.IyueService.IyueVPNService
 import cn.ys1231.appproxy.IyueService.VpnServiceController
 import cn.ys1231.appproxy.data.Utils
+import cn.ys1231.appproxy.mcpserver.MCPForegroundService
 import cn.ys1231.appproxy.mcpserver.MCPServer
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -42,6 +43,9 @@ class MainActivity : FlutterActivity() {
     var currentProxy: Map<String, Any>? = null
     private var conn: ServiceConnection? = null
     private var vpnController: VpnServiceController? = null
+    private var mcpServiceBinder: MCPForegroundService.MCPServiceBinder? = null
+    private var mcpConn: ServiceConnection? = null
+    private var isMcpBind: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,6 +71,24 @@ class MainActivity : FlutterActivity() {
         }
         if (bindService(intentVpnService!!, conn!!, Context.BIND_AUTO_CREATE)) {
             isBind = true
+        }
+
+        // 启动并绑定 MCPForegroundService，确保 App 进入后台后 MCP Server 持续运行
+        val mcpServiceIntent = Intent(this, MCPForegroundService::class.java)
+        startForegroundService(mcpServiceIntent)
+        mcpConn = object : ServiceConnection {
+            override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+                Log.d(TAG, "MCPForegroundService onServiceConnected")
+                mcpServiceBinder = service as? MCPForegroundService.MCPServiceBinder
+            }
+
+            override fun onServiceDisconnected(name: ComponentName?) {
+                Log.d(TAG, "MCPForegroundService onServiceDisconnected")
+                mcpServiceBinder = null
+            }
+        }
+        if (bindService(mcpServiceIntent, mcpConn!!, Context.BIND_AUTO_CREATE)) {
+            isMcpBind = true
         }
     }
 
@@ -171,7 +193,7 @@ class MainActivity : FlutterActivity() {
             when (call.method) {
                 "startMcpServer" -> {
                     try {
-                        MCPServer.getInstance(this).startMcpServer()
+                        mcpServiceBinder?.startMcpServer()
                         result.success(true)
                     } catch (e: Exception) {
                         result.error("-1", e.message, null)
@@ -179,7 +201,7 @@ class MainActivity : FlutterActivity() {
                 }
                 "stopMcpServer" -> {
                     try {
-                        MCPServer.getInstance(this).stopMcpServer()
+                        mcpServiceBinder?.stopMcpServer()
                         result.success(true)
                     } catch (e: Exception) {
                         result.error("-1", e.message, null)
@@ -190,9 +212,15 @@ class MainActivity : FlutterActivity() {
                         val arguments = call.arguments as List<*>
                         val port: Int = arguments[0] as Int
                         val auth: String = arguments[1] as String
-                        MCPServer.getInstance(this).updateMcpPort(port)
-                        MCPServer.getInstance(this).updateMcpAuth(auth)
-                        result.success(true)
+                        // 用局部变量捕获 binder，避免两次访问间 binder 状态变化引发不一致
+                        val binder = mcpServiceBinder
+                        if (binder != null) {
+                            binder.updateMcpPort(port)
+                            binder.updateMcpAuth(auth)
+                            result.success(true)
+                        } else {
+                            result.success(false)
+                        }
                     } catch (e: Exception) {
                         result.error("-1", e.message, null)
                     }
@@ -298,6 +326,10 @@ class MainActivity : FlutterActivity() {
         if (isBind) {
             unbindService(conn!!)
             isBind = false
+        }
+        if (isMcpBind) {
+            unbindService(mcpConn!!)
+            isMcpBind = false
         }
     }
 }

@@ -36,20 +36,17 @@ class IyueVPNService : VpnService() {
         super.onCreate()
         Log.d(TAG, "onCreate: VPNServiceBinder")
 
-        // 创建通知渠道（Android Oreo 及以上版本）
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channelId = "iyue_vpn_channel"
-            val channelName = "Iyue VPN"
-            val importance = NotificationManager.IMPORTANCE_DEFAULT
-            val channel = NotificationChannel(channelId, channelName, importance).apply {
-                description = "Iyue VPN Service Channel"
-                lightColor = Color.BLUE
-                lockscreenVisibility = Notification.VISIBILITY_PRIVATE
-            }
-            val notificationManager: NotificationManager =
-                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
+        val channelId = "iyue_vpn_channel"
+        val channelName = "Iyue VPN"
+        val importance = NotificationManager.IMPORTANCE_DEFAULT
+        val channel = NotificationChannel(channelId, channelName, importance).apply {
+            description = "Iyue VPN Service Channel"
+            lightColor = Color.BLUE
+            lockscreenVisibility = Notification.VISIBILITY_PRIVATE
         }
+        val notificationManager: NotificationManager =
+            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.createNotificationChannel(channel)
     }
 
     override fun onBind(intent: Intent?): IBinder {
@@ -88,6 +85,7 @@ class IyueVPNService : VpnService() {
             .setContentText("$proxyType: $proxyHost:$proxyPort")
             .setSmallIcon(R.mipmap.vpn, 3)
             .setContentIntent(pendingIntent)
+            .setOngoing(true)
             .build()
 
         startForeground(1, notification)
@@ -150,9 +148,7 @@ class IyueVPNService : VpnService() {
                 vpnInterface?.close()
                 vpnInterface = null
                 isRunning = false
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    stopForeground(STOP_FOREGROUND_REMOVE)
-                }
+                stopForeground(STOP_FOREGROUND_REMOVE)
             }
             Log.d(TAG, "stopEngine: success!")
         } catch (e: Exception) {

@@ -28,6 +28,16 @@
         android:roundIcon="@mipmap/vpn_round"
         android:label="appproxy">
         <service
+            android:name=".mcpserver.MCPForegroundService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="other" />
+        </service>
+
+        <service
             android:name=".IyueService.IyueVPNService"
             android:enabled="true"
             android:exported="true"
