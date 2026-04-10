@@ -51,3 +51,4 @@ pubspec.lock
 # FVM Version Cache
 .fvm/
 /arms_cache
+.vscode

@@ -83,7 +83,7 @@ class IyueVPNService : VpnService() {
         val notification = NotificationCompat.Builder(this, "iyue_vpn_channel")
             .setContentTitle("${applicationInfo.loadLabel(packageManager)}: $proxyName")
             .setContentText("$proxyType: $proxyHost:$proxyPort")
-            .setSmallIcon(R.mipmap.vpn, 3)
+            .setSmallIcon(R.mipmap.vpn_round)
             .setContentIntent(pendingIntent)
             .setOngoing(true)
             .build()

@@ -18,7 +18,7 @@
 {
   "mcpServers": {
     "appproxy-mcp": {
-      "type": "streamable-http",
+      "type": "http",
       "url": "http://192.168.0.10:12345/mcp",
       "headers": {
         "Authorization": "Bearer appproxy"
@@ -50,8 +50,6 @@
 ![Screenshot_20240604-205229](./assets/Screenshot_20240604-205229.png)
 
 ![Screenshot_20240604-205148](./assets/Screenshot_20240604-205148.png)
-
-![Screenshot_20240604-205158](./assets/Screenshot_20240604-205158.png)
 
 ![screenshot-20260327-205536](./assets/screenshot-20260327-205536.png)
 

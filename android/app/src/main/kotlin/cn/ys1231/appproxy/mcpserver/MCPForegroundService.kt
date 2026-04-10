@@ -7,6 +7,7 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ServiceInfo
 import android.graphics.Color
 import android.os.Binder
 import android.os.Build
@@ -56,7 +57,12 @@ class MCPForegroundService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d(TAG, "onStartCommand: MCPForegroundService")
         // 立即提升为前台服务，防止系统在后台将进程降级
-        startForeground(NOTIFICATION_ID, buildNotification())
+        // Android 14（API 34）起，Manifest 声明了 foregroundServiceType 后必须传入对应类型，否则抛 MissingForegroundServiceTypeException
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            startForeground(NOTIFICATION_ID, buildNotification(), ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
+        } else {
+            startForeground(NOTIFICATION_ID, buildNotification())
+        }
         // 不需要系统在服务被杀后自动重启，App 重新打开时会由 Flutter 重新启动
         return START_NOT_STICKY
     }
@@ -79,14 +85,19 @@ class MCPForegroundService : Service() {
     // ---------- 私有服务方法，Binder 统一委托到这里 ----------
 
     private fun startMcpServer() {
-        // 此时服务已经是前台状态（onStartCommand 已调用 startForeground），无需重复调用
+        // stopMcpServer 会通过 stopForeground 移除通知，所以每次启动都需要重新调用 startForeground
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            startForeground(NOTIFICATION_ID, buildNotification(true), ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
+        } else {
+            startForeground(NOTIFICATION_ID, buildNotification(true))
+        }
         Log.d(TAG, "startMcpServer: Netty server started")
         MCPServer.getInstance(applicationContext).startMcpServer()
     }
 
     private fun stopMcpServer() {
         MCPServer.getInstance(applicationContext).stopMcpServer()
-        // 移除前台通知（服务本身继续运行，下次 startMcpServer 时会重新提升）
+        // 移除前台通知，下次 startMcpServer 会重新调用 startForeground 补回来
         Log.d(TAG, "stopMcpServer: Netty server stopped")
         stopForeground(STOP_FOREGROUND_REMOVE)
     }
@@ -119,7 +130,7 @@ class MCPForegroundService : Service() {
         notificationManager.createNotificationChannel(channel)
     }
 
-    private fun buildNotification(): Notification {
+    private fun buildNotification(running: Boolean = false): Notification {
         val notificationIntent = Intent(this, MainActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(
             this,
@@ -127,10 +138,11 @@ class MCPForegroundService : Service() {
             notificationIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
+        val contentText = if (running) "MCP Server is running" else "MCP Server is not running"
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle(applicationInfo.loadLabel(packageManager).toString())
-            .setContentText("MCP Server is running")
-            .setSmallIcon(R.mipmap.vpn)
+            .setContentTitle("${applicationInfo.loadLabel(packageManager)}-mcp")
+            .setContentText(contentText)
+            .setSmallIcon(R.mipmap.vpn_round)
             .setContentIntent(pendingIntent)
             // 设置为持续通知，不允许用户手动滑掉
             .setOngoing(true)

@@ -1,6 +1,5 @@
 package cn.ys1231.appproxy
 
-//import cn.ys1231.appproxy.IyueService.IyueVPNService1
 import android.Manifest.permission.POST_NOTIFICATIONS
 import android.app.Activity
 import android.content.ComponentName
@@ -90,6 +89,7 @@ class MainActivity : FlutterActivity() {
         if (bindService(mcpServiceIntent, mcpConn!!, Context.BIND_AUTO_CREATE)) {
             isMcpBind = true
         }
+        checkVpnPermission()
     }
 
     private fun startVpnService() {
@@ -156,7 +156,7 @@ class MainActivity : FlutterActivity() {
                 "startVpn" -> {
                     try {
                         currentProxy = call.arguments<Map<String, Any>>()
-                        checkVpnPermissionAndStartVpnService()
+                        startVpnService()
                         result.success(iyueVpnService?.isRunning())
                     } catch (e: Exception) {
                         result.error("-1", e.message, null)
@@ -243,7 +243,7 @@ class MainActivity : FlutterActivity() {
 
     private val VPN_REQUEST_CODE = 100
     private val REQUEST_NOTIFICATION_PERMISSION = 1231
-    private fun checkVpnPermissionAndStartVpnService() {
+    private fun checkVpnPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(
                     this,
@@ -264,8 +264,6 @@ class MainActivity : FlutterActivity() {
         val intent = VpnService.prepare(context)
         if (intent != null) {
             this.startActivityForResult(intent, VPN_REQUEST_CODE)
-        } else {
-            startVpnService()
         }
     }
 
@@ -273,9 +271,8 @@ class MainActivity : FlutterActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == VPN_REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK) {
-                // 用户授权成功，启动VPN服务
-                Log.d(TAG, "onActivityResult: 用户授权成功，启动VPN服务 ")
-                startVpnService()
+                // 用户授权成功
+                Log.d(TAG, "onActivityResult: 用户授权成功")
             } else {
                 // 用户拒绝授权，处理相应逻辑
                 Log.d(TAG, "onActivityResult: 用户拒绝授权 ")
