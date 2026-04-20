@@ -106,11 +106,11 @@ flutter {
 dependencies {
     implementation(files("libs/tun2socks.aar"))
     implementation("com.google.code.gson:gson:2.13.2")
-    implementation("io.ktor:ktor-server-cors:3.4.1")
-    implementation("io.ktor:ktor-server-netty:3.4.1")
-    implementation("io.ktor:ktor-server-auth:3.4.1")
-    implementation("io.ktor:ktor-server-sse:3.4.1")
-    implementation("io.modelcontextprotocol:kotlin-sdk-server:0.9.0")
-    implementation("io.ktor:ktor-server-content-negotiation:3.4.1")
-    implementation("io.ktor:ktor-serialization-kotlinx-json:3.4.1")
+    implementation("io.ktor:ktor-server-cors:3.4.2")
+    implementation("io.ktor:ktor-server-netty:3.4.2")
+    implementation("io.ktor:ktor-server-auth:3.4.2")
+    implementation("io.ktor:ktor-server-sse:3.4.2")
+    implementation("io.modelcontextprotocol:kotlin-sdk-server:0.11.1")
+    implementation("io.ktor:ktor-server-content-negotiation:3.4.2")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:3.4.2")
 }

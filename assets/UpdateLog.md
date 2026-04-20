@@ -1,3 +1,13 @@
+- fix(vpn): :bug: #46 修复 VPN 中断后无法抢占接口
+- chore(android): 升级依赖版本及优化构建配置
+- 将 ktor 依赖库版本从 3.4.1 升级至 3.4.2
+- 将 kotlin-sdk-server 版本从 0.9.0 升级至 0.11.1
+- 禁用 android.enableJetifier 以优化构建性能
+- 启用 Gradle 守护进程、并行构建、按需配置及缓存提升构建速度
+- 开启 Kotlin 增量编译
+- 在启动 VPN 逻辑中添加权限检查调用
+- 更新应用版本号至 0.2.7+27
+---
 - feat(android): :ambulance: 启动申请通知和 vpn 权限不再走用时申请逻辑
 - fix(McpServer): :fire: 修复 McpServer 后台无法访问
 - fix(mcpserver): 修改用户名密码长度校验限制

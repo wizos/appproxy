@@ -156,6 +156,7 @@ class MainActivity : FlutterActivity() {
                 "startVpn" -> {
                     try {
                         currentProxy = call.arguments<Map<String, Any>>()
+                        checkVpnPermission()
                         startVpnService()
                         result.success(iyueVpnService?.isRunning())
                     } catch (e: Exception) {
