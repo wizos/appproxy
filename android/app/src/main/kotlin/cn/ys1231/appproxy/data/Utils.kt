@@ -67,7 +67,8 @@ class Utils(private val context: Context) {
             appInfoMap["packageName"] = info.packageName
 
             // 获取并添加应用是否为系统应用的信息
-            appInfoMap["isSystemApp"] = info.isSystemApp
+            // Chrome 浏览器强制标记为非系统应用
+            appInfoMap["isSystemApp"] = if (info.packageName == "com.android.chrome") false else info.isSystemApp
 
             // 获取应用的图标，并将其转换为Base64编码的字符串
             // 应用可能在遍历过程中被卸载，需捕获 NameNotFoundException
