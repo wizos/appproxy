@@ -118,7 +118,7 @@ shorebird patch --platforms=android
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=ys1231/appproxy&type=Date)](https://star-history.com/#ys1231/appproxy&Date)
+[![Star History Chart](https://star-history.dera.page/svg?repos=ys1231/appproxy&type=Date)](https://star-history.dera.page/#ys1231/appproxy&Date)
 
 # 免责声明
 - 本程序仅用于学习交流, 请勿用于非法用途.
