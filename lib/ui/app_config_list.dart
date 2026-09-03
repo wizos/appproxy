@@ -129,6 +129,7 @@ class AppConfigState extends State<AppConfigList> {
     platform.setMethodCallHandler((call) async {
       if (call.method == 'onRefresh') {
         // 执行Flutter逻辑
+        _useCached = false;
         getAppList();
       }
     });

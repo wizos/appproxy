@@ -1,3 +1,16 @@
+
+---
+- feat(appproxy): :sparkles: 应用安装/卸载时自动刷新配置列表
+- chore(deps): 升级依赖版本
+- device_info_plus 升级至 13.2.0
+- package_info_plus 升级至 10.2.1
+- app_settings 升级至 9.0.0
+- build(android): 升级构建工具链并清理打包警告
+- AGP 升级至 9.3.2，KGP 升级至 2.4.10，迁移至 Built-in Kotlin
+- Gradle 升级至 9.7.1
+- tun2socks 同步上游最新代码，gomobile 编译新增 -ldflags="-s -w" 剥离调试符号
+- 更新应用版本号至 0.2.8+28
+---
 - fix(vpn): :bug: #46 修复 VPN 中断后无法抢占接口
 - chore(android): 升级依赖版本及优化构建配置
 - 将 ktor 依赖库版本从 3.4.1 升级至 3.4.2

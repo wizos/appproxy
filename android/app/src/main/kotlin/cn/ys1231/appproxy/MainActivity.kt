@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -18,6 +19,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import cn.ys1231.appproxy.IyueService.IyueVPNService
 import cn.ys1231.appproxy.IyueService.VpnServiceController
+import cn.ys1231.appproxy.data.AppChangeReceiver
 import cn.ys1231.appproxy.data.Utils
 import cn.ys1231.appproxy.mcpserver.MCPForegroundService
 import cn.ys1231.appproxy.mcpserver.MCPServer
@@ -34,7 +36,6 @@ class MainActivity : FlutterActivity() {
     private val CHANNEL_MCP_SERVER = "cn.ys1231/appproxy/mcpserver"
     private var FLUTTER_VPN_CHANNEL: MethodChannel? = null
     private var FLUTTER_CHANNEL: MethodChannel? = null
-    private var FLUTTER_MCP_SERVER: MethodChannel? = null
     private var utils: Utils? = null
     private var intentVpnService: Intent? = null
     private var iyueVpnService: IyueVPNService? = null
@@ -45,6 +46,8 @@ class MainActivity : FlutterActivity() {
     private var mcpServiceBinder: MCPForegroundService.MCPServiceBinder? = null
     private var mcpConn: ServiceConnection? = null
     private var isMcpBind: Boolean = false
+    // 使用 lateinit 延迟初始化
+    private lateinit var receiver: AppChangeReceiver
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -90,6 +93,18 @@ class MainActivity : FlutterActivity() {
             isMcpBind = true
         }
         checkVpnPermission()
+
+        val filter = IntentFilter().apply {
+            addAction(Intent.ACTION_PACKAGE_ADDED)
+            addAction(Intent.ACTION_PACKAGE_REMOVED)
+            addAction(Intent.ACTION_PACKAGE_REPLACED)
+            addDataScheme("package")
+        }
+        receiver = AppChangeReceiver{
+            Log.d(TAG, "onAppChanged: $packageName, notify Flutter to refresh app list")
+            FLUTTER_CHANNEL?.invokeMethod("onRefresh", null)
+        }
+        registerReceiver(receiver, filter)
     }
 
     private fun startVpnService() {
@@ -328,6 +343,10 @@ class MainActivity : FlutterActivity() {
         if (isMcpBind) {
             unbindService(mcpConn!!)
             isMcpBind = false
+        }
+        // 4. 在 Activity 销毁时取消注册，避免内存泄漏
+        if (::receiver.isInitialized) {
+            unregisterReceiver(receiver)
         }
     }
 }

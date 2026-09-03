@@ -9,5 +9,5 @@ go get golang.org/x/mobile/bind
 go get
 make
 gomobile init
-gomobile bind -o ../android/app/libs/tun2socks.aar -target android -androidapi 28 ./engine
-ls ../android/app/libs/tun2socks.aar
+gomobile bind  -ldflags="-s -w" -o ../android/app/libs/tun2socks.aar -target android -androidapi 28 ./engine
+ls -lh ../android/app/libs/tun2socks.aar

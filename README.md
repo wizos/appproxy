@@ -66,30 +66,14 @@
 
 ## build tun2socks
 
-- `touch btun2socks.sh`
-
 ```shell
-#!/bin/zsh
-set -x
-cd tun2socks
-TUN2SOCKS_DIR="${0:a:h}"
-cd $TUN2SOCKS_DIR
-go get
-go install golang.org/x/mobile/cmd/gomobile@latest
-go get golang.org/x/mobile/bind
-go get
-make
-gomobile init
-# 兼容 Android 9
-gomobile bind -o ../android/app/libs/tun2socks.aar -target android -androidapi 28 ./engine
-ls ../android/app/libs/tun2socks.aar
+./btun2socks.sh
 ```
 
 ```shell
 # 如果发现Android Studio 调试flutter 自动跳到一个只读的文件,调试的时候无法修改代码,可以恢复上一个版本,是的坑.
 # 推荐 "Android Studio Iguana | 2023.2.1 Patch 2" -> "Android Studio Meerkat | 2024.3.1 Patch 1"
 # line 设置为 100
-tun2socks/build.sh
 flutter --no-color pub global run intl_utils:generate
 flutter build apk --release --split-per-abi --build-name=$VERSION --dart-define=BUILD_DATE=$(date +%Y-%m-%d) --obfuscate --split-debug-info ./build/
 ```
