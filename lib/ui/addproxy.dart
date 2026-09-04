@@ -83,7 +83,7 @@ class _AddProxyWidgetState extends State<AddProxyWidget> {
                   debugPrint("proxyConfig:$proxyConfig");
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                       content: Text(S.of(context).text_check_parameters),
-                      backgroundColor: Colors.purple.withOpacity(0.4)));
+                      backgroundColor: Colors.purple.withValues(alpha: 0.4)));
                   return;
                 }
                 // 这俩可以为空

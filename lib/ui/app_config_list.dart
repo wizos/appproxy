@@ -121,6 +121,17 @@ class AppConfigState extends State<AppConfigList> {
   // app bar
   bool _appActionSearchHide = false;
 
+  // 初始化数据
+  Future<void> _initData() async {
+    _selectedItemsMap = await _appfile.readAppConfig();
+    // 同步已选择历史数据
+    for (var key in _selectedItemsMap.keys) {
+      if (_selectedItemsMap[key] == true) {
+        appProxyPackageList.add(key);
+      }
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -135,16 +146,7 @@ class AppConfigState extends State<AppConfigList> {
     });
   }
 
-  // 初始化数据
-  Future<void> _initData() async {
-    _selectedItemsMap = await _appfile.readAppConfig();
-    // 同步已选择历史数据
-    for (var key in _selectedItemsMap.keys) {
-      if (_selectedItemsMap[key] == true) {
-        appProxyPackageList.add(key);
-      }
-    }
-  }
+
 
   // 更新选项
   void updateShowUserApp(isShowUserApp) {

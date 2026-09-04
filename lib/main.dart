@@ -63,7 +63,7 @@ class MyApp extends StatelessWidget {
                     // 其他颜色也可以根据需要设置为透明或自定义颜色
                   ),
                   appBarTheme: const AppBarTheme(centerTitle: true)),
-              darkTheme: ThemeData.dark(useMaterial3: true),
+              darkTheme: ThemeData.dark(useMaterial3: true).copyWith( appBarTheme: const AppBarTheme(centerTitle: true)),
               themeMode: themeState.themeMode,
               // 设置底部导航菜单作为应用的起始页面
               home: const iyueMainPage(),
