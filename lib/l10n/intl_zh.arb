@@ -49,5 +49,6 @@
   "mcp_server": "MCP 服务",
   "mcp_port": "MCP 端口",
   "mcp_auth": "MCP 密码",
-  "ok": "确认"
+  "ok": "确认",
+  "text_modify_config": "修改配置"
 }

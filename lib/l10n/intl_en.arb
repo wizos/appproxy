@@ -49,5 +49,6 @@
   "mcp_server": "MCP Server",
   "mcp_port": "MCP Port",
   "mcp_auth": "MCP Password",
-  "ok": "OK"
+  "ok": "OK",
+  "text_modify_config": "Modify Configuration"
 }

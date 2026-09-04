@@ -43,6 +43,9 @@ class _AddProxyWidgetState extends State<AddProxyWidget> {
 
   final Debounce _debounce = Debounce(const Duration(seconds: 1));
 
+  // 默认title 添加代理配置 false 为修改
+  var isDefaultTitle = true;
+
   @override
   void initState() {
     super.initState();
@@ -54,6 +57,9 @@ class _AddProxyWidgetState extends State<AddProxyWidget> {
       _controller_proxyPort.text = widget.onData['proxyPort'];
       _controller_proxyUser.text = widget.onData['proxyUser'];
       _controller_proxyPass.text = widget.onData['proxyPass'];
+      isDefaultTitle = false;
+    }else{
+      isDefaultTitle = true;
     }
   }
 
@@ -67,7 +73,7 @@ class _AddProxyWidgetState extends State<AddProxyWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text(S.of(context).text_add_proxy),
+          title: Text(isDefaultTitle?S.of(context).text_add_proxy: S.of(context).text_modify_config),
           // backgroundColor: const Color.fromRGBO(142, 0, 244, 1.0),
           backgroundColor: Theme.of(context).primaryColor,
           actions: [
